@@ -1,0 +1,88 @@
+// FIXME: add test if voices exist in the class path !
+buildscript {
+
+    def maryttsVersion = '6.0.1-SNAPSHOT'
+
+    repositories {
+        maven {
+            url 'https://oss.jfrog.org/artifactory/repo'
+        }
+        jcenter()
+    }
+    dependencies {
+	classpath group: 'de.dfki.mary', name: 'marytts-common', version: maryttsVersion
+	['en'].each { locale ->
+            classpath group: 'de.dfki.mary', name: "marytts-lang-$locale", version: maryttsVersion
+	}
+    }
+}
+
+
+apply plugin: 'java'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+dependencies {
+    compile group:"org.json", name:"json", version:"20090211"
+
+}
+
+
+/**********************************************************************************
+ ** MaryTTS import and starting part
+ **********************************************************************************/
+import marytts.runutils.*;
+import marytts.config.JSONMaryConfigLoader;
+import marytts.config.MaryConfiguration;
+
+
+/**********************************************************************************
+ ** Main tasks
+ **********************************************************************************/
+task mary_init() {
+    doLast {
+        if (Mary.getCurrentState() != Mary.STATE_RUNNING) {
+	    Mary.startup();
+        }
+    }
+}
+
+task test_mary(dependsOn:mary_init) {
+
+    doLast {
+
+        if (Mary.getCurrentState() != Mary.STATE_RUNNING) {
+            throw new IllegalStateException("MARY system is not running");
+        }
+
+
+        Exception save_ex = null;
+        Object output = null;
+	Request request = null;
+	def configuration = (new File("src/config.json")).text
+	def input_data = (new File("src/in.txt")).text
+
+	InputStream configuration_stream = new ByteArrayInputStream(configuration.getBytes("UTF-8"));
+	MaryConfiguration conf_object = (new JSONMaryConfigLoader()).loadConfiguration(configuration_stream);
+        request = new Request(conf_object, input_data);
+        request.process();
+        output = request.serializeFinaleUtterance();
+
+
+	// Retrieve logger if necessary
+        String log_result = "";
+	ByteArrayOutputStream baos_logger = request.getBaosLogger();
+	if (baos_logger != null)
+	log_result = baos_logger.toString("UTF-8");
+	println("log = \n" + log_result)
+	// println("output =\n" + output.toString());
+    }
+}
+
+task mary_stop(dependsOn: test_mary) {
+    // doLast {
+    // 	Mary.shutdown();
+    // }
+}
