@@ -81,19 +81,11 @@ task test_mary(dependsOn:mary_init) {
 	Request request = null;
 	def configuration = (new File("src/config.json")).text
 	(new File("src/in.txt")).eachLine { input_data ->
-	    // SimpleEncoder encoder = CmuEncoderFactory.createSimple();
-	    // Syllabifier syllabifier = CmuSyllabifierFactory.create();
-
-	    // // returns a space separated arpabet encoding of the given word*
-	    // String result = encoder.encodeBestAsSpaceString(input_data);
-
-	    // // splits the word into a list of the word's syllables
-	    // List<String> syllables = syllabifier.splitIntoSyllables(result);
-	    // syllables.each { print "\"$it\" " }
-	    // println("")
-
+	    // Loading input
 	    InputStream configuration_stream = new ByteArrayInputStream(configuration.getBytes("UTF-8"));
 	    MaryConfiguration conf_object = (new JSONMaryConfigLoader()).loadConfiguration(configuration_stream);
+
+	    // Send request to mary
             request = new Request(conf_object, input_data);
             request.process();
             output = request.serializeFinaleUtterance();
@@ -103,9 +95,9 @@ task test_mary(dependsOn:mary_init) {
             String log_result = "";
 	    ByteArrayOutputStream baos_logger = request.getBaosLogger();
 	    if (baos_logger != null) {
-		log_result = baos_logger.toString("UTF-8");
+	    	log_result = baos_logger.toString("UTF-8");
+		project.logger.debug("log = \n" + log_result)
 	    }
-	    //println("log = \n" + log_result)
 	    print(output.toString());
 	}
     }
