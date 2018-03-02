@@ -1,0 +1,21 @@
+def maryttsVersion = '6.0.1-SNAPSHOT'
+
+repositories {
+    /*
+     maven {
+     url 'https://oss.jfrog.org/artifactory/repo'
+ }
+     */
+    maven {
+        url 'https://oss.jfrog.org/artifactory/oss-snapshot-local'
+    }
+    jcenter()
+}
+dependencies {
+
+    compile group: "de.dfki.mary", name: "marytts-g2pcrf", version: "0.1-SNAPSHOT"
+    compile group: 'de.dfki.mary', name: 'marytts-common', version: maryttsVersion
+    ['en'].each { locale ->
+        compile group: 'de.dfki.mary', name: "marytts-lang-$locale", version: maryttsVersion
+    }
+}

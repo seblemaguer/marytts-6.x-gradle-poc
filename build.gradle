@@ -4,16 +4,28 @@ buildscript {
     def maryttsVersion = '6.0.1-SNAPSHOT'
 
     repositories {
+        /*
+         maven {
+         url 'https://oss.jfrog.org/artifactory/repo'
+     }
+         */
         maven {
-            url 'https://oss.jfrog.org/artifactory/repo'
+            url 'https://oss.jfrog.org/artifactory/oss-snapshot-local'
         }
         jcenter()
     }
     dependencies {
-	classpath group: 'de.dfki.mary', name: 'marytts-common', version: maryttsVersion
-	['en'].each { locale ->
+
+	classpath group: "com.github.steveash.jg2p", name:"jg2p-pipe-cmu", version: "1.1.0"
+	classpath group: "com.github.steveash.jg2p", name:"jg2p-syllg-cmu", version: "1.1.0"
+
+/*
+        classpath group: "de.dfki.mary", name: "marytts-g2pcrf", version: "0.1-SNAPSHOT"
+        classpath group: 'de.dfki.mary', name: 'marytts-common', version: maryttsVersion
+        ['en'].each { locale ->
             classpath group: 'de.dfki.mary', name: "marytts-lang-$locale", version: maryttsVersion
-	}
+        }
+*/
     }
 }
 
@@ -37,6 +49,12 @@ import marytts.runutils.*;
 import marytts.config.JSONMaryConfigLoader;
 import marytts.config.MaryConfiguration;
 
+
+// G2P CRF
+import com.github.steveash.jg2p.model.CmuEncoderFactory;
+import com.github.steveash.jg2p.SimpleEncoder;
+import com.github.steveash.jg2p.model.CmuSyllabifierFactory;
+import com.github.steveash.jg2p.syllchain.Syllabifier;
 
 /**********************************************************************************
  ** Main tasks
@@ -62,22 +80,34 @@ task test_mary(dependsOn:mary_init) {
         Object output = null;
 	Request request = null;
 	def configuration = (new File("src/config.json")).text
-	def input_data = (new File("src/in.txt")).text
+	(new File("src/in.txt")).eachLine { input_data ->
+	    // SimpleEncoder encoder = CmuEncoderFactory.createSimple();
+	    // Syllabifier syllabifier = CmuSyllabifierFactory.create();
 
-	InputStream configuration_stream = new ByteArrayInputStream(configuration.getBytes("UTF-8"));
-	MaryConfiguration conf_object = (new JSONMaryConfigLoader()).loadConfiguration(configuration_stream);
-        request = new Request(conf_object, input_data);
-        request.process();
-        output = request.serializeFinaleUtterance();
+	    // // returns a space separated arpabet encoding of the given word*
+	    // String result = encoder.encodeBestAsSpaceString(input_data);
+
+	    // // splits the word into a list of the word's syllables
+	    // List<String> syllables = syllabifier.splitIntoSyllables(result);
+	    // syllables.each { print "\"$it\" " }
+	    // println("")
+
+	    InputStream configuration_stream = new ByteArrayInputStream(configuration.getBytes("UTF-8"));
+	    MaryConfiguration conf_object = (new JSONMaryConfigLoader()).loadConfiguration(configuration_stream);
+            request = new Request(conf_object, input_data);
+            request.process();
+            output = request.serializeFinaleUtterance();
 
 
-	// Retrieve logger if necessary
-        String log_result = "";
-	ByteArrayOutputStream baos_logger = request.getBaosLogger();
-	if (baos_logger != null)
-	log_result = baos_logger.toString("UTF-8");
-	println("log = \n" + log_result)
-	// println("output =\n" + output.toString());
+	    // Retrieve logger if necessary
+            String log_result = "";
+	    ByteArrayOutputStream baos_logger = request.getBaosLogger();
+	    if (baos_logger != null) {
+		log_result = baos_logger.toString("UTF-8");
+	    }
+	    //println("log = \n" + log_result)
+	    print(output.toString());
+	}
     }
 }
 
