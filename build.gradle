@@ -37,19 +37,12 @@ import marytts.runutils.*;
 import marytts.config.JSONMaryConfigLoader;
 import marytts.config.MaryConfiguration;
 
+Mary.startup();
 
 /**********************************************************************************
  ** Main tasks
  **********************************************************************************/
-task mary_init() {
-    doLast {
-        if (Mary.getCurrentState() != Mary.STATE_RUNNING) {
-	    Mary.startup();
-        }
-    }
-}
-
-task test_mary(dependsOn:mary_init) {
+task test_mary() {
 
     doLast {
 
@@ -60,29 +53,23 @@ task test_mary(dependsOn:mary_init) {
 
         Exception save_ex = null;
         Object output = null;
-	Request request = null;
-	def configuration = (new File("src/config.json")).text
-	def input_data = (new File("src/in.txt")).text
+        Request request = null;
+        def configuration = (new File("src/config.json")).text
+            def input_data = (new File("src/in.txt")).text
 
-	InputStream configuration_stream = new ByteArrayInputStream(configuration.getBytes("UTF-8"));
-	MaryConfiguration conf_object = (new JSONMaryConfigLoader()).loadConfiguration(configuration_stream);
+            InputStream configuration_stream = new ByteArrayInputStream(configuration.getBytes("UTF-8"));
+        MaryConfiguration conf_object = (new JSONMaryConfigLoader()).loadConfiguration(configuration_stream);
         request = new Request(conf_object, input_data);
         request.process();
         output = request.serializeFinaleUtterance();
 
 
-	// Retrieve logger if necessary
+        // Retrieve logger if necessary
         String log_result = "";
-	ByteArrayOutputStream baos_logger = request.getBaosLogger();
-	if (baos_logger != null)
-	log_result = baos_logger.toString("UTF-8");
-	println("log = \n" + log_result)
-	// println("output =\n" + output.toString());
+        ByteArrayOutputStream baos_logger = request.getBaosLogger();
+        if (baos_logger != null)
+            log_result = baos_logger.toString("UTF-8");
+        println("log = \n" + log_result)
+        println("output =\n" + output.toString());
     }
-}
-
-task mary_stop(dependsOn: test_mary) {
-    // doLast {
-    // 	Mary.shutdown();
-    // }
 }

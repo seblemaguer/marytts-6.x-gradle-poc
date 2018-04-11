@@ -2,12 +2,13 @@
     "marytts.runutils.Request": {
 	"logger_level":"DEBUG",
 	"input_serializer": "marytts.io.serializer.TextSerializer",
-	"output_serializer": "marytts.io.serializer.XMLSerializer",
+	"output_serializer": "marytts.io.serializer.TextGridSerializer",
 	"module_sequence": [
 	    "marytts.language.en.JTokenizer",
             "marytts.language.en.Preprocess",
             "marytts.language.en.OpenNLPPosTagger",
-            "marytts.language.en.USJPhonemiser"
+            "marytts.language.en.USJPhonemiser",
+            "marytts.modules.dummies.DurationPrediction"
 	]
     }
 }
