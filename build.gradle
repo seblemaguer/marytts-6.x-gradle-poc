@@ -1,8 +1,6 @@
 // FIXME: add test if voices exist in the class path !
 buildscript {
-
     def maryttsVersion = '6.0.1-SNAPSHOT'
-
     repositories {
         maven {
             url 'https://oss.jfrog.org/artifactory/repo'
@@ -45,31 +43,32 @@ Mary.startup();
 task test_mary() {
 
     doLast {
-
+        // Start mary
         if (Mary.getCurrentState() != Mary.STATE_RUNNING) {
             throw new IllegalStateException("MARY system is not running");
         }
 
+        // Load input data
+        def input_data = (new File("src/in.txt")).text
 
-        Exception save_ex = null;
-        Object output = null;
-        Request request = null;
+        // Load configuration
         def configuration = (new File("src/config.json")).text
-            def input_data = (new File("src/in.txt")).text
-
-            InputStream configuration_stream = new ByteArrayInputStream(configuration.getBytes("UTF-8"));
+        InputStream configuration_stream = new ByteArrayInputStream(configuration.getBytes("UTF-8"));
         MaryConfiguration conf_object = (new JSONMaryConfigLoader()).loadConfiguration(configuration_stream);
-        request = new Request(conf_object, input_data);
+
+        // Process request
+        Request request = new Request(conf_object, input_data);
         request.process();
-        output = request.serializeFinaleUtterance();
+        Object output = request.serializeFinaleUtterance();
 
 
         // Retrieve logger if necessary
         String log_result = "";
         ByteArrayOutputStream baos_logger = request.getBaosLogger();
-        if (baos_logger != null)
+        if (baos_logger != null) {
             log_result = baos_logger.toString("UTF-8");
-        println("log = \n" + log_result)
+            println("log = \n" + log_result)
+        }
         println("output =\n" + output.toString());
     }
 }
